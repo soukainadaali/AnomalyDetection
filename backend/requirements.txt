@@ -1,0 +1,12 @@
+flask
+flask-cors
+pymongo
+joblib
+scikit-learn
+xgboost
+lightgbm
+catboost
+mapie
+shap
+requests
+python-dotenv
