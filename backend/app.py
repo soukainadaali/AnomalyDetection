@@ -6,6 +6,7 @@ import joblib
 from flask import Flask, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
+from werkzeug.exceptions import HTTPException
 
 from config import Config
 from routes.explain import explain_bp
@@ -42,10 +43,24 @@ def create_app() -> Flask:
     app.register_blueprint(explain_bp)
     app.register_blueprint(historical_bp)
 
+    @app.get("/")
+    def index() -> tuple[dict, int]:
+        """Base route for quick service discovery in browser."""
+        return {
+            "service": "aviation-risk-api",
+            "status": "ok",
+            "available_endpoints": ["/health", "/predict", "/explain", "/historical"],
+        }, 200
+
     @app.get("/health")
     def health() -> tuple[dict, int]:
         """Simple service health endpoint."""
         return {"status": "ok"}, 200
+
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(error: HTTPException):
+        """Preserve intended HTTP status codes (e.g., 404)."""
+        return jsonify({"error": error.description}), error.code
 
     @app.errorhandler(Exception)
     def handle_unexpected_error(error: Exception):
